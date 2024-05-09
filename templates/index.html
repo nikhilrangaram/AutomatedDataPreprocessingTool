@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Data Preprocessing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            border: 1px solid #007bff;
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #0056b3;
+        }
+
+        .file-name {
+            margin-top: 5px;
+            color: #777;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            margin-right: 5px;
+            cursor: pointer;
+            /*horizontal-align: middle;
+            /* Align checkboxes vertically */
+        }
+
+        .options {
+            display: none;
+            padding-left: 20px;
+            /*border-left: 2px solid #007bff;*/
+        }
+
+        .options label {
+            margin-bottom: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        select,
+        input[type="text"] {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Automated Data Preprocessing</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label class="custom-file-upload" for="fileInput">Choose file</label>
+        <input type="file" name="file" id="fileInput" accept=".csv,.txt,.xls,.xlsx,.zip"
+            onchange="displayFileName(this)">
+        <div class="file-name" id="fileName"></div>
+        <br><br>
+        <label><input type="radio" name="data_type" value="tabular" onclick="showOptions('tabular')"> Tabular
+            Data</label>
+        <label><input type="radio" name="data_type" value="text" onclick="showOptions('text')"> Text Data</label>
+        <label><input type="radio" name="data_type" value="image" onclick="showOptions('image')"> Image Data</label>
+
+        <div id="tabular_options" class="options">
+            <h2>Tabular Data Preprocessing:</h2>
+            <label><input type="checkbox" name="preprocessing_option" value="Handle Missing Values"> Handle Missing
+                Values</label><br>
+            <label><input type="checkbox" name="preprocessing_option" value="Categorical Variable Encoding"> Categorical
+                Variable Encoding</label><br>
+            <label><input type="checkbox" name="preprocessing_option" value="Feature Scaling/Normalization"> Feature
+                Scaling/Normalization</label><br>
+            <label><input type="checkbox" name="preprocessing_option" value="Handle Outliers"
+                    onchange="showOutliersOptions()"> Handle Outliers</label><br>
+            <div id="outliers_sub_options" class="options">
+                Method:
+                <select name="method">
+                    <option value="iqr">IQR</option>
+                    <option value="z-score">Z-Score</option>
+                </select><br>
+                Outliers Method:
+                <select name="outliers_method">
+                    <option value="clip">Clip</option>
+                    <option value="remove">Remove</option>
+                </select><br>
+            </div>
+            <label><input type="checkbox" name="preprocessing_option" value="Handle Imbalanced Data"
+                    onchange="showBalancingOptions()"> Handle Imbalanced Data</label><br>
+            <div id="balance_sub_options" class="options">
+                Method:
+                <select name="sampling_method">
+                    <option value="oversample">Over Sampling</option>
+                    <option value="undersample">Under Sampling</option>
+                </select><br>
+                Target column : <input type="text" name="target_col" value=""><br>
+            </div>
+            <label><input type="checkbox" name="preprocessing_option" value="Data Splitting"
+                    onchange="showSplitRatio()"> Data Splitting</label><br>
+            <div id="split_ratio" class="options">
+                Split ratio: <input type="text" name="split_ratio" value="0.2">
+                <br>
+            </div>
+        </div>
+
+        <div id="text_options" class="options">
+            <h2>Text Data Preprocessing:</h2>
+            <label><input type="checkbox" name="preprocessing_option" value="Text Preprocessing"> Text
+                Preprocessing</label><br>
+        </div>
+
+        <div id="image_options" class="options">
+            <h2>Image Data Preprocessing:</h2>
+            <label><input type="checkbox" name="preprocessing_option" value="Resizing" onchange="showResizeOptions()">
+                Resizing</label><br>
+            <div id="resize_sub_options" class="options">
+                Width: <input type="text" name="resize_width" value=""><br>
+                Height: <input type="text" name="resize_height" value=""><br>
+            </div>
+            <label><input type="checkbox" name="preprocessing_option" value="Rescaling" onchange="showRescaleOptions()">
+                Rescaling</label><br>
+            <div id="rescale_sub_options" class="options">
+                Scale Factor: <input type="text" name="scale_factor" value=""><br>
+            </div>
+            <label><input type="checkbox" name="preprocessing_option" value="Normalization"> Normalization</label><br>
+            <label><input type="checkbox" name="preprocessing_option" value="Data Augmentation"
+                    onchange="showDataAugmentationOptions()"> Data Augmentation</label><br>
+            <div id="augmentation_sub_options" class="options">
+                Rotation Angle: <input type="text" name="rotation_angle" value=""><br>
+                Horizontal Flip: <input type="checkbox" name="horizontal_flip"><br>
+                Vertical Flip: <input type="checkbox" name="vertical_flip"><br>
+                Crop X: <input type="text" name="crop_x" value=""><br>
+                Crop Y: <input type="text" name="crop_y" value=""><br>
+                Crop Width: <input type="text" name="crop_width" value=""><br>
+                Crop Height: <input type="text" name="crop_height" value=""><br>
+            </div>
+            <label><input type="checkbox" name="preprocessing_option" value="Gray-scale Conversion"> Gray-scale
+                Conversion</label><br>
+        </div>
+
+        <br><br>
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        function showDataAugmentationOptions() {
+            var augmentationOptions = document.getElementById('augmentation_sub_options');
+            augmentationOptions.style.display = augmentationOptions.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showRescaleOptions() {
+            var rescaleOptions = document.getElementById('rescale_sub_options')
+            rescaleOptions.style.display = rescaleOptions.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showResizeOptions() {
+            var resizeOptions = document.getElementById('resize_sub_options')
+            resizeOptions.style.display = resizeOptions.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function selectFiles() {
+            document.getElementById('fileInput').click();
+        }
+
+        function showOptions(dataType) {
+            var options = document.getElementsByClassName('options');
+            for (var i = 0; i < options.length; i++) {
+                options[i].style.display = 'none';
+            }
+            document.getElementById(dataType + '_options').style.display = 'block';
+        }
+
+        function showOutliersOptions() {
+            var outliersSubOptions = document.getElementById('outliers_sub_options');
+            outliersSubOptions.style.display = outliersSubOptions.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showSplitRatio() {
+            var splitRatio = document.getElementById('split_ratio');
+            splitRatio.style.display = splitRatio.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showBalancingOptions() {
+            var samplingMethod = document.getElementById("balance_sub_options");
+            samplingMethod.style.display = samplingMethod.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function displayFileName(input) {
+            var fileName = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileName.innerHTML = 'Selected file: ' + input.files[0].name;
+            } else {
+                fileName.innerHTML = '';
+            }
+        }
+    </script>
+</body>
+
+</html>
